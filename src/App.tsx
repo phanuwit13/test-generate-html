@@ -1,5 +1,8 @@
 import { Listbox, Transition } from '@headlessui/react'
 import { DragBox } from 'Components/DragBox'
+import Input from 'Components/Input'
+import LoadingPage from 'Components/LoadingPage'
+import { useLoadingPageStore } from 'Components/LoadingPage/store'
 import { htmlToVideo } from 'Services/htmlToVideo'
 import { animationList } from 'Utils/constants'
 import saveAs from 'file-saver'
@@ -30,6 +33,7 @@ function App() {
   const ref = useRef<any>(null)
   const refImageBg = useRef<any>(null)
   const refRender = useRef<any>(null)
+  const { setIsLoading } = useLoadingPageStore()
 
   const [boxes, setBoxes] = useState<{
     top: number
@@ -69,8 +73,8 @@ function App() {
   const { register, watch, setValue, control } = useForm<FormInput>({
     defaultValues: {
       displayTextPosition: 'topLeft',
-      displayWidth: 500,
-      displayHeight: 400,
+      displayWidth: 768,
+      displayHeight: 800,
       textAnimationType: animationList['Attention seekers'][0],
       textAnimationDuration: 1,
       displayTextFontSize: 16,
@@ -115,11 +119,13 @@ function App() {
   const replaceDuration = (str: string, duration: number) => {
     return str.replace(
       `animation-duration: ${duration}s`,
-      `animation-duration: ${duration * 4.5}s`
+      // `animation-duration: ${duration * 4.5}s`
+      `animation-duration: ${duration}s`
     )
   }
 
   const handleConvertToCanvas = async () => {
+    setIsLoading(true)
     const contentHtml = replaceDuration(
       ref.current.innerHTML,
       watch('textAnimationDuration')
@@ -176,7 +182,7 @@ function App() {
       )
     }
     zip.generateAsync({ type: 'blob' }).then(async function (content) {
-      await saveAs(content, 'content.zip')
+      // await saveAs(content, 'content.zip')
 
       const res = await htmlToVideo.localConvertToVideo({
         file: content,
@@ -186,6 +192,7 @@ function App() {
       console.log('res', res)
       const blob = new Blob([res.data], { type: 'video/mp4' })
       await saveAs(blob, 'example.mp4')
+      setIsLoading(false)
       // const videoBlobUrl = URL.createObjectURL(res.data.blob())
       // await saveAs(res.data.blob(), 'example.mp4')
     })
@@ -204,41 +211,21 @@ function App() {
       <div className='flex overflow-x-auto min-h-screen'>
         <div className='p-[20px] min-w-[400px] w-[400px] gap-2 grid grid-cols-1 h-fit'>
           <div className='grid grid-cols-2 gap-4'>
-            <fieldset>
-              <label
-                htmlFor='displayWidth'
-                className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
-              >
-                Width
-              </label>
-              <input
-                type='text'
-                id='displayWidth'
-                className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5'
-                placeholder='Width'
-                {...form.displayWidth}
-              />
-            </fieldset>
-            <fieldset>
-              <label
-                htmlFor='displayHeight'
-                className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
-              >
-                Height
-              </label>
-              <input
-                type='text'
-                id='displayHeight'
-                className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
-                placeholder='Height'
-                {...form.displayHeight}
-              />
-            </fieldset>
+            <Input
+              inputRef={form.displayWidth.ref}
+              label='Width'
+              {...form.displayWidth}
+            />
+            <Input
+              inputRef={form.displayHeight.ref}
+              label='Height'
+              {...form.displayHeight}
+            />
           </div>
           <fieldset>
             <label
               htmlFor='displayText'
-              className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
+              className='block mb-2 text-sm font-medium text-gray-900'
             >
               Background Image Type
             </label>
@@ -251,29 +238,29 @@ function App() {
                     {...form.backgroundType}
                     name='backgroundType'
                     value='bg-link'
-                    className='w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 '
+                    className='w-4 h-4 text-blue-600 bg-white border-gray-300 focus:ring-blue-500 cursor-pointer'
                   />
                   <label
                     htmlFor='bg-link'
-                    className='w-full py-2.5 ml-2 text-sm font-medium text-gray-900 '
+                    className='w-full py-2.5 ml-2 text-sm font-medium text-gray-900 cursor-pointer'
                   >
                     URL
                   </label>
                 </fieldset>
               </li>
               <li className='w-full '>
-                <fieldset className='flex items-center pl-2.5 '>
+                <fieldset className='flex items-center pl-2.5'>
                   <input
                     id='bg-file'
                     type='radio'
                     {...form.backgroundType}
                     name='backgroundType'
                     value='bg-file'
-                    className='w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 '
+                    className='w-4 h-4 text-blue-600 bg-white border-gray-300 focus:ring-blue-500 cursor-pointer'
                   />
                   <label
                     htmlFor='bg-file'
-                    className='w-full py-2.5 ml-2 text-sm font-medium text-gray-900'
+                    className='w-full py-2.5 ml-2 text-sm font-medium text-gray-900 cursor-pointer'
                   >
                     File
                   </label>
@@ -284,22 +271,19 @@ function App() {
           <fieldset>
             <label
               htmlFor='displayBackground'
-              className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
+              className='block mb-2 text-sm font-medium text-gray-900'
             >
               Background
             </label>
             {watch('backgroundType') === 'bg-link' && (
-              <input
-                type='text'
-                id='displayBackground'
-                className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5'
-                placeholder='Background Url'
+              <Input
+                inputRef={form.displayBackground.ref}
                 {...form.displayBackground}
               />
             )}
             {watch('backgroundType') === 'bg-file' && (
               <input
-                className='block w-full text-sm p-2 text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none '
+                className='block w-full text-sm p-2 text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-white focus:outline-none '
                 id='file_input'
                 type='file'
                 onChange={(e) => {
@@ -311,65 +295,54 @@ function App() {
           <fieldset>
             <label
               htmlFor='displayText'
-              className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
+              className='block mb-2 text-sm font-medium text-gray-900'
             >
               Display Text
             </label>
-            <input
-              type='text'
+            <textarea
+              className='bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5'
               id='displayText'
-              className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
-              placeholder='Display Text'
+              cols={30}
+              rows={5}
               {...form.displayText}
-            />
+            ></textarea>
           </fieldset>
           <div className='grid grid-cols-2 gap-4'>
             <fieldset>
               <label
-                htmlFor='displayText'
-                className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
+                htmlFor='displayTextColor'
+                className='block mb-2 text-sm font-medium text-gray-900'
               >
                 Display Text Color
               </label>
               <div className='flex'>
                 <input
                   type='color'
-                  className='h-[42px] bg-gray-50 border border-gray-300 text-gray-900  rounded-lg p-1'
+                  className='h-[42px] bg-white border border-gray-300 text-gray-900 border-r-0 rounded-l-lg p-1'
                   {...form.displayTextColor}
                 />
                 <input
                   type='text'
-                  className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 '
+                  className='bg-white border border-gray-300 text-gray-900 text-sm rounded-r-lg border-l-0 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 '
                   value={watch('displayTextColor') || '#000000'}
                   onChange={(e) => {
                     console.log('e', e)
                     setValue('displayTextColor', e.target.value)
                   }}
-                  // {...form.displayTextColor}
                 />
               </div>
             </fieldset>
-            <fieldset>
-              <label
-                htmlFor='displayText'
-                className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
-              >
-                Display Text Size
-              </label>
-              <input
-                type='text'
-                id='displayText'
-                className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
-                placeholder='Display Text'
-                {...form.displayTextFontSize}
-              />
-            </fieldset>
+            <Input
+              label='Display Text Size'
+              inputRef={form.displayTextFontSize.ref}
+              {...form.displayTextFontSize}
+            />
           </div>
           <div className='grid grid-cols-2 gap-4'>
             <fieldset>
               <label
                 htmlFor='displayText'
-                className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
+                className='block mb-2 text-sm font-medium text-gray-900'
               >
                 Text Animation
               </label>
@@ -380,7 +353,7 @@ function App() {
                 render={({ field }) => (
                   <Listbox {...field}>
                     <div className='relative mt-1'>
-                      <Listbox.Button className='relative bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5'>
+                      <Listbox.Button className='relative bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5'>
                         <span className='block truncate text-start min-h-[20px]'>
                           {field.value ?? ''}
                         </span>
@@ -443,56 +416,36 @@ function App() {
                 )}
               />
             </fieldset>
-            <fieldset>
-              <label
-                htmlFor='displayWidth'
-                className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
-              >
-                Duration
-              </label>
-              <input
-                type='text'
-                id='displayWidth'
-                className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5'
-                placeholder='Width'
-                {...form.textAnimationDuration}
-              />
-            </fieldset>
+            <Input
+              label='Duration'
+              inputRef={form.textAnimationDuration.ref}
+              {...form.textAnimationDuration}
+            />
           </div>
           <div className='grid grid-cols-2 gap-4'>
-            <fieldset>
-              <label
-                htmlFor='displayWidth'
-                className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
-              >
-                Animation Repeat
-              </label>
-              <input
-                type='text'
-                id='textAnimationTime'
-                className='disabled:bg-gray-100 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5'
-                placeholder='Width'
-                disabled={watch('textAnimationLoop')}
-                {...form.textAnimationTime}
-              />
-            </fieldset>
+            <Input
+              inputRef={form.textAnimationTime.ref}
+              label='Animation Repeat'
+              disabled={watch('textAnimationLoop')}
+              {...form.textAnimationTime}
+            />
             <fieldset>
               <label
                 htmlFor='textAnimationTime'
-                className='block mb-2 text-sm font-medium text-gray-900 dark:text-white'
+                className='block mb-2 text-sm font-medium text-gray-900'
               >
                 Animation Loop
               </label>
-              <div className='flex items-center pl-4 border border-gray-200 rounded-lg dark:border-gray-700'>
+              <div className='flex items-center pl-4 border border-gray-200 rounded-lg '>
                 <input
                   id='animationLoop'
                   type='checkbox'
                   {...form.textAnimationLoop}
-                  className='w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 '
+                  className='w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-2 '
                 />
                 <label
                   htmlFor='animationLoop'
-                  className='w-full py-2.5 ml-2 text-sm font-medium text-gray-900 dark:text-gray-300'
+                  className='w-full py-2.5 ml-2 text-sm font-medium text-gray-900 '
                 >
                   infinity
                 </label>
@@ -502,7 +455,7 @@ function App() {
           <button
             type='button'
             onClick={handleConvertToCanvas}
-            className='text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mt-[20px]'
+            className='text-white bg-[#93D600] hover:opacity-[0.9] focus:ring-4 focus:ring-lime-200 font-medium rounded-lg text-sm px-5 py-2.5 mt-[20px]'
           >
             Render Video
           </button>
@@ -544,7 +497,7 @@ function App() {
         </div>
       </div>
       <div ref={refRender}></div>
-      {/* <AnimationComponent /> */}
+      <LoadingPage />
     </div>
   )
 }
