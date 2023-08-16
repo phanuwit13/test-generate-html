@@ -1,26 +1,19 @@
-import React from 'react'
-import { RegisterOptions } from 'react-hook-form'
-
-import { UseFormRegister, FieldValues } from 'react-hook-form'
+import React, { LegacyRef } from 'react'
 
 interface TextInputProps {
   name: string
   onChange: (...event: any[]) => void
-  onBlur: (...event: any[]) => void
-  inputRef: React.Ref<any>
+  onBlur?: (...event: any[]) => void
+  value?: string
   label?: string
   disabled?: boolean
 }
 
-const Input = ({
-  name,
-  label,
-  onChange,
-  onBlur,
-  inputRef,
-  disabled,
-}: TextInputProps) => {
-  return (
+const Input = React.forwardRef(
+  (
+    { name, label, onChange, onBlur, disabled, value }: TextInputProps,
+    ref: LegacyRef<HTMLInputElement>
+  ) => (
     <fieldset>
       {label && (
         <label
@@ -37,10 +30,11 @@ const Input = ({
         onChange={onChange}
         onBlur={onBlur}
         name={name}
-        ref={inputRef}
+        ref={ref}
+        value={value}
       />
     </fieldset>
   )
-}
+)
 
 export default Input

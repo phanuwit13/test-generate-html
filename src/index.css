@@ -1,5 +1,37 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import "./Style/animate.css";
+@import './Style/animate.css';
+/* front */
+@import url('https://fonts.googleapis.com/css2?family=Anuphan:wght@200;400;600;700&family=Athiti:wght@200;400;600;700&family=Bai+Jamjuree:wght@200;400;600;700&family=Chakra+Petch:wght@300;400;600;700&family=Charm:wght@400;700&family=Charmonman:wght@400;700&family=Chonburi&family=Fahkwang:wght@200;400;600;700&family=IBM+Plex+Sans+Thai+Looped:wght@200;400;600;700&family=IBM+Plex+Sans+Thai:wght@200;400;600;700&family=Itim&family=K2D:wght@200;400;600;700&family=Kanit:wght@200;400;600;700&family=KoHo:wght@200;400;600;700&family=Kodchasan:wght@200;400;600;700&family=Krub:wght@200;400;600;700&family=Maitree:wght@200;400;600&family=Mali:wght@200;400;600;700&family=Mitr:wght@200;400;500;600&family=Niramit:wght@200;300;400;600&family=Noto+Sans+Thai+Looped:wght@200;400;600;700&family=Noto+Sans+Thai:wght@200;400;600;700&family=Noto+Serif+Thai:wght@200;400;600;700&family=Pattaya&family=Pridi:wght@200;400;600&family=Prompt:wght@200;400;600;700&family=Sarabun:wght@200;400;600;700&family=Sriracha&family=Srisakdi:wght@400;700&family=Taviraj:wght@200;400;600;700&family=Thasadith:wght@400;700&family=Trirong:wght@200;400;600;700&display=swap');
 
+.swal2-confirm {
+  background-color: #93d600 !important;
+  padding-top: 0.625rem;
+  padding-bottom: 0.625rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  border-radius: 0.5rem !important;
+}
+.swal2-confirm:hover {
+  background-color: #93d600;
+  opacity: 0.9;
+}
+.swal2-confirm:focus {
+  box-shadow: 0 0 0 3px rgb(217, 249, 157) !important;
+}
+
+@keyframes gracias-animate {
+  0% {
+    stroke-dasharray: 0 50%;
+    stroke-dashoffset: 20%;
+    fill: #94deeb;
+  }
+
+  100% {
+    stroke-dasharray: 50% 0;
+    stroke-dashoffstet: -20%;
+    fill: #94deeb00;
+  }
+}
