@@ -8,6 +8,7 @@ const style: CSSProperties = {
 }
 
 export interface BoxProps {
+  id: string
   left: number
   top: number
   hideSourceOnDrag?: boolean
@@ -15,6 +16,7 @@ export interface BoxProps {
 }
 
 export const DragBox: FC<BoxProps> = ({
+  id,
   left,
   top,
   hideSourceOnDrag,
@@ -23,12 +25,12 @@ export const DragBox: FC<BoxProps> = ({
   const [{ isDragging }, drag] = useDrag(
     () => ({
       type: 'box',
-      item: { left, top },
+      item: { id, left, top },
       collect: (monitor) => ({
         isDragging: monitor.isDragging(),
       }),
     }),
-    [left, top]
+    [id, left, top]
   )
 
   if (isDragging && hideSourceOnDrag) {
